@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "./CartContext";
 
+// "/travaux" temporairement retiré de la navigation (code conservé dans app/travaux/)
 const navLinks = [
-  { href: "/travaux", label: "Travaux" },
   { href: "/boutique", label: "Boutique" },
   { href: "/a-propos", label: "A propos" },
 ];

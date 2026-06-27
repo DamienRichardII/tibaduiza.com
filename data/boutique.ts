@@ -182,7 +182,7 @@ export const boutique: CategorieBoutique[] = [
         nouveaute: true,
         description:
           "Livre photographique réalisé lors d'un voyage dans les hautes terres de la cordillère des Andes en Colombie. Une série d'images contemplatives sur la relation entre l'homme et la montagne.",
-        dimensions: "21 × 27 cm — 80 pages",
+        dimensions: "Format A5 — 140 pages",
       },
     ],
   },
