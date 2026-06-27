@@ -5,44 +5,44 @@ import Link from "next/link";
 
 const slides = [
   {
-    src: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=900&q=85",
+    src: "/travaux/p3_nb_ufo.jpg",
     href: "/travaux/noir-et-blanc",
     label: "Noir et blanc",
   },
   {
-    src: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=900&q=85",
+    src: "/travaux/p4_nb_foret.jpg",
     href: "/travaux/noir-et-blanc",
-    label: "Danse",
+    label: "Noir et blanc",
   },
   {
-    src: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=900&q=85",
+    src: "/travaux/p5_nb_sculpture.jpg",
     href: "/travaux/noir-et-blanc",
-    label: "Portraits N&B",
+    label: "Noir et blanc",
   },
   {
-    src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=900&q=85",
+    src: "/travaux/p1_nb_homme.jpg",
+    href: "/travaux/noir-et-blanc",
+    label: "Noir et blanc",
+  },
+  {
+    src: "/travaux/p2_couleur_paris.jpg",
     href: "/travaux/couleurs",
     label: "Couleurs",
   },
   {
-    src: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=900&q=85",
+    src: "/travaux/p6_louvre.jpg",
     href: "/travaux/couleurs",
-    label: "Portraits couleurs",
+    label: "Couleurs",
   },
   {
-    src: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=900&q=85",
+    src: "/travaux/p7_colombie.jpg",
     href: "/travaux/couleurs",
-    label: "Reportage",
+    label: "Couleurs",
   },
   {
-    src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=85",
-    href: "/travaux/tierra-de-gigantes",
-    label: "Tierra de Gigantes",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=900&q=85",
-    href: "/travaux/tierra-de-gigantes",
-    label: "Tierra de Gigantes",
+    src: "/travaux/p8_bapteme.jpg",
+    href: "/travaux/couleurs",
+    label: "Couleurs",
   },
 ];
 
@@ -60,7 +60,6 @@ export default function TravauxPage() {
     return () => clearInterval(timer);
   }, [next, paused]);
 
-  // Navigation clavier
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") next();
@@ -84,45 +83,38 @@ export default function TravauxPage() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Zone photo centrale */}
-      <div
-        style={{
-          position: "relative",
-          height: "72vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {slides.map((slide, i) => (
-          <Link
-            key={i}
-            href={slide.href}
+      {/* Photos centrées — chaque lien couvre toute la zone */}
+      {slides.map((slide, i) => (
+        <Link
+          key={i}
+          href={slide.href}
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: i === current ? 1 : 0,
+            transition: "opacity 0.6s ease-in-out",
+            pointerEvents: i === current ? "auto" : "none",
+          }}
+          tabIndex={i === current ? 0 : -1}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={slide.src}
+            alt={slide.label}
             style={{
-              position: "absolute",
-              opacity: i === current ? 1 : 0,
-              transition: "opacity 0.6s ease-in-out",
-              pointerEvents: i === current ? "auto" : "none",
+              maxHeight: "70vh",
+              maxWidth: "min(560px, 60vw)",
+              width: "auto",
+              height: "auto",
+              objectFit: "contain",
               display: "block",
-              height: "100%",
             }}
-            tabIndex={i === current ? 0 : -1}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.src}
-              alt={slide.label}
-              style={{
-                height: "100%",
-                width: "auto",
-                maxWidth: "min(480px, 55vw)",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </Link>
-        ))}
-      </div>
+          />
+        </Link>
+      ))}
 
       {/* Flèche gauche */}
       <button
@@ -168,7 +160,7 @@ export default function TravauxPage() {
         →
       </button>
 
-      {/* Bas gauche — label */}
+      {/* Bas gauche — catégorie */}
       <div
         style={{
           position: "absolute",
@@ -184,7 +176,7 @@ export default function TravauxPage() {
         {slides[current].label}
       </div>
 
-      {/* Bas droite — compteur */}
+      {/* Bas droite — compteur X/N */}
       <div
         style={{
           position: "absolute",
