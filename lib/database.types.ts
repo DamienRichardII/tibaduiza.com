@@ -66,42 +66,55 @@ export interface Order {
   updated_at: string;
 }
 
+export type OrderInsert = Omit<Order, "id" | "created_at" | "updated_at"> & {
+  id?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type OrderUpdate = Partial<OrderInsert>;
+
+interface OrderEventRow {
+  id: string;
+  order_id: string;
+  event_type: string;
+  payload: Record<string, unknown> | null;
+  created_at: string;
+}
+
+interface OrderEventInsert {
+  id?: string;
+  order_id: string;
+  event_type: string;
+  payload?: Record<string, unknown> | null;
+  created_at?: string;
+}
+
+// ── Type Database complet — respecte la contrainte GenericSchema de Supabase ──
+// GenericSchema exige : Tables, Views, Functions sur le schéma public.
+// GenericTable exige : Row, Insert, Update, Relationships sur chaque table.
 export interface Database {
   public: {
     Tables: {
       orders: {
         Row: Order;
-        Insert: Partial<Order> & {
-          order_number: string;
-          customer_first_name: string;
-          customer_last_name: string;
-          customer_email: string;
-          delivery_mode: DeliveryMode;
-          shipping_first_name: string;
-          shipping_last_name: string;
-          product_name: string;
-          product_price: number;
-          quantity: number;
-          total_amount: number;
-          currency: string;
-        };
-        Update: Partial<Order>;
+        Insert: OrderInsert;
+        Update: OrderUpdate;
+        Relationships: [];
       };
       order_events: {
-        Row: {
-          id: string;
-          order_id: string;
-          event_type: string;
-          payload: Record<string, unknown> | null;
-          created_at: string;
-        };
-        Insert: {
-          order_id: string;
-          event_type: string;
-          payload?: Record<string, unknown> | null;
-        };
-        Update: never;
+        Row: OrderEventRow;
+        Insert: OrderEventInsert;
+        Update: Partial<OrderEventInsert>;
+        Relationships: [];
       };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: {
+      payment_status: PaymentStatus;
+      order_status: OrderStatus;
+      delivery_mode: DeliveryMode;
     };
   };
 }

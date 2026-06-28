@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { sendShippingConfirmationEmail } from "@/lib/email";
-import type { Order } from "@/lib/database.types";
+import type { OrderUpdate } from "@/lib/database.types";
 
 const schema = z.object({
   order_status:    z.enum(["paid", "preparing", "shipped", "completed", "canceled", "refunded"]),
@@ -53,7 +53,7 @@ export async function PATCH(
   }
 
   // Mise à jour
-  const updatePayload: Partial<Order> = { order_status };
+  const updatePayload: OrderUpdate = { order_status };
   if (carrier_name)    updatePayload.carrier_name    = carrier_name;
   if (tracking_number) updatePayload.tracking_number = tracking_number;
   if (tracking_url)    updatePayload.tracking_url    = tracking_url;
