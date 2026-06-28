@@ -130,7 +130,11 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session) {
     event_type: "payment_confirmed",
     payload:    {
       stripe_session_id:  session.id,
-      payment_intent_id:  session.payment_intent,
+      // session.payment_intent peut être string | Stripe.PaymentIntent | null
+      // On normalise en string | null pour satisfaire le type Json
+      payment_intent_id:  typeof session.payment_intent === "string"
+                            ? session.payment_intent
+                            : null,
     },
   });
 
