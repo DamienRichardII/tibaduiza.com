@@ -11,33 +11,66 @@ function CommanderForm() {
   const initialMode = (searchParams.get("mode") as DeliveryMode) ?? "domicile";
 
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialMode);
-  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
+    firstName:    "",
+    lastName:     "",
+    email:        "",
+    phone:        "",
     addressLine1: "",
     addressLine2: "",
-    postalCode: "",
-    city: "",
-    country: "France",
+    postalCode:   "",
+    city:         "",
+    country:      "France",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrorMsg(null);
   };
 
-  // TODO Phase backend : remplacer par un POST /api/checkout/create-session
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulation en attendant le backend Stripe
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    setSubmitted(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await fetch("/api/checkout/create-session", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName:    form.firstName,
+          lastName:     form.lastName,
+          email:        form.email,
+          phone:        form.phone || undefined,
+          deliveryMode,
+          addressLine1: deliveryMode === "domicile" ? form.addressLine1 : undefined,
+          addressLine2: deliveryMode === "domicile" ? form.addressLine2 || undefined : undefined,
+          postalCode:   deliveryMode === "domicile" ? form.postalCode : undefined,
+          city:         deliveryMode === "domicile" ? form.city : undefined,
+          country:      deliveryMode === "domicile" ? form.country : undefined,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.url) {
+        setErrorMsg(json.error ?? "Une erreur est survenue. Veuillez réessayer.");
+        setLoading(false);
+        return;
+      }
+
+      // Redirection vers Stripe Checkout
+      window.location.href = json.url;
+
+    } catch {
+      setErrorMsg("Erreur de connexion. Vérifiez votre connexion internet et réessayez.");
+      setLoading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -50,7 +83,7 @@ function CommanderForm() {
     border: "1px solid rgba(0,0,0,0.2)",
     outline: "none",
     fontFamily: "inherit",
-    appearance: "none",
+    appearance: "none" as const,
   };
 
   const labelStyle: React.CSSProperties = {
@@ -59,106 +92,76 @@ function CommanderForm() {
     fontWeight: 300,
     color: "var(--details)",
     letterSpacing: "0.06em",
-    textTransform: "uppercase",
+    textTransform: "uppercase" as const,
     marginBottom: "6px",
   };
 
-  if (submitted) {
-    return (
-      <div style={{ maxWidth: "480px", padding: "clamp(24px, 5vw, 48px) clamp(16px, 5vw, 24px)" }}>
-        <div
-          style={{
-            backgroundColor: "rgba(114,1,1,0.05)",
-            borderLeft: "2px solid var(--accent)",
-            padding: "20px 24px",
-            marginBottom: "32px",
-          }}
-        >
-          <p
-            style={{
-              fontSize: "13px",
-              fontWeight: 300,
-              color: "var(--text)",
-              lineHeight: "1.7",
-              marginBottom: "8px",
-            }}
-          >
-            Votre précommande a bien été enregistrée.
-          </p>
-          <p style={{ fontSize: "12px", fontWeight: 300, color: "var(--details)", lineHeight: "1.6" }}>
-            Vous recevrez un email de confirmation à <strong>{form.email}</strong> dès que le système de paiement sera actif.
-            Les expéditions débuteront sous un mois.
-          </p>
-        </div>
-        <Link
-          href="/boutique"
-          style={{
-            fontSize: "12px",
-            fontWeight: 300,
-            color: "var(--text)",
-            letterSpacing: "0.04em",
-            textDecoration: "underline",
-            textUnderlineOffset: "3px",
-          }}
-        >
-          ← Retour à la boutique
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: "clamp(16px, 4vw, 24px) clamp(16px, 4vw, 24px) 60px", maxWidth: "560px" }}>
+    <div
+      style={{
+        padding:    "clamp(16px, 4vw, 24px) clamp(16px, 4vw, 24px) 60px",
+        maxWidth:   "560px",
+      }}
+    >
       {/* Breadcrumb */}
       <div
         style={{
           marginBottom: "clamp(20px, 4vw, 32px)",
-          fontSize: "12px",
-          fontWeight: 300,
-          display: "flex",
-          gap: "8px",
-          flexWrap: "wrap",
+          fontSize:     "12px",
+          fontWeight:   300,
+          display:      "flex",
+          gap:          "8px",
+          flexWrap:     "wrap",
         }}
       >
         <Link href="/boutique" style={{ color: "var(--text)" }}>Boutique</Link>
         <span style={{ color: "var(--details)" }}>&gt;</span>
-        <Link href="/boutique/tierra-de-gigantes" style={{ color: "var(--text)" }}>Tierra de Gigantes</Link>
+        <Link href="/boutique/tierra-de-gigantes" style={{ color: "var(--text)" }}>
+          Tierra de Gigantes
+        </Link>
         <span style={{ color: "var(--details)" }}>&gt;</span>
         <span style={{ color: "var(--accent)" }}>Précommander</span>
       </div>
 
+      {/* Titre + badge */}
       <h1
         style={{
-          fontSize: "13px",
+          fontSize:  "13px",
           fontWeight: 300,
           marginBottom: "8px",
           color: "var(--text)",
-          letterSpacing: "0.02em",
         }}
       >
         Tierra de gigantes — 45€
       </h1>
-
-      {/* Badge précommande */}
       <div
         style={{
-          display: "inline-block",
+          display:         "inline-block",
           backgroundColor: "var(--accent)",
-          color: "#fff",
-          fontSize: "10px",
-          fontWeight: 300,
-          padding: "3px 10px",
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          marginBottom: "28px",
+          color:           "#fff",
+          fontSize:        "10px",
+          fontWeight:      300,
+          padding:         "3px 10px",
+          letterSpacing:   "0.1em",
+          textTransform:   "uppercase",
+          marginBottom:    "28px",
         }}
       >
         Précommande ouverte
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {/* Nom / Prénom */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+      >
+        {/* Prénom / Nom */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
+            gap: "12px",
+          }}
+        >
           <div>
             <label style={labelStyle}>Prénom *</label>
             <input
@@ -166,6 +169,7 @@ function CommanderForm() {
               value={form.firstName}
               onChange={handleChange}
               required
+              autoComplete="given-name"
               style={inputStyle}
             />
           </div>
@@ -176,6 +180,7 @@ function CommanderForm() {
               value={form.lastName}
               onChange={handleChange}
               required
+              autoComplete="family-name"
               style={inputStyle}
             />
           </div>
@@ -190,6 +195,7 @@ function CommanderForm() {
             value={form.email}
             onChange={handleChange}
             required
+            autoComplete="email"
             style={inputStyle}
           />
         </div>
@@ -202,15 +208,30 @@ function CommanderForm() {
             type="tel"
             value={form.phone}
             onChange={handleChange}
+            autoComplete="tel"
             style={inputStyle}
           />
         </div>
 
         {/* Mode de livraison */}
         <div>
-          <p style={{ ...labelStyle, marginBottom: "10px" }}>Mode de livraison *</p>
+          <p
+            style={{
+              ...labelStyle,
+              marginBottom: "10px",
+            }}
+          >
+            Mode de livraison *
+          </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="radio"
                 name="delivery"
@@ -220,12 +241,37 @@ function CommanderForm() {
                 style={{ marginTop: "2px", accentColor: "var(--accent)" }}
               />
               <span>
-                <span style={{ display: "block", fontSize: "12px", fontWeight: 300, color: "var(--text)" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 300,
+                    color: "var(--text)",
+                  }}
+                >
                   Livraison à domicile
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "var(--details)",
+                    marginTop: "2px",
+                  }}
+                >
+                  France et international — frais inclus
                 </span>
               </span>
             </label>
-            <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer" }}>
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="radio"
                 name="delivery"
@@ -235,10 +281,24 @@ function CommanderForm() {
                 style={{ marginTop: "2px", accentColor: "var(--accent)" }}
               />
               <span>
-                <span style={{ display: "block", fontSize: "12px", fontWeight: 300, color: "var(--text)" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 300,
+                    color: "var(--text)",
+                  }}
+                >
                   Remise en main propre
                 </span>
-                <span style={{ display: "block", fontSize: "11px", color: "var(--details)", marginTop: "2px" }}>
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    color: "var(--details)",
+                    marginTop: "2px",
+                  }}
+                >
                   Île-de-France uniquement
                 </span>
               </span>
@@ -246,24 +306,24 @@ function CommanderForm() {
           </div>
         </div>
 
-        {/* Message remise en main propre */}
+        {/* Message main propre */}
         {deliveryMode === "main-propre" && (
           <div
             style={{
-              padding: "12px 14px",
+              padding:         "12px 14px",
               backgroundColor: "rgba(114,1,1,0.05)",
-              borderLeft: "2px solid var(--accent)",
-              fontSize: "11px",
-              fontWeight: 300,
-              color: "var(--details)",
-              lineHeight: "1.6",
+              borderLeft:      "2px solid var(--accent)",
+              fontSize:        "11px",
+              fontWeight:      300,
+              color:           "var(--details)",
+              lineHeight:      "1.6",
             }}
           >
             Les modalités de remise vous seront communiquées par email après validation de votre précommande.
           </div>
         )}
 
-        {/* Adresse — uniquement si domicile */}
+        {/* Adresse — livraison domicile uniquement */}
         {deliveryMode === "domicile" && (
           <>
             <div>
@@ -274,6 +334,7 @@ function CommanderForm() {
                 onChange={handleChange}
                 required
                 placeholder="Numéro et rue"
+                autoComplete="address-line1"
                 style={inputStyle}
               />
             </div>
@@ -284,10 +345,17 @@ function CommanderForm() {
                 value={form.addressLine2}
                 onChange={handleChange}
                 placeholder="Appartement, bâtiment, étage..."
+                autoComplete="address-line2"
                 style={inputStyle}
               />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "12px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "120px 1fr",
+                gap: "12px",
+              }}
+            >
               <div>
                 <label style={labelStyle}>Code postal *</label>
                 <input
@@ -295,6 +363,7 @@ function CommanderForm() {
                   value={form.postalCode}
                   onChange={handleChange}
                   required
+                  autoComplete="postal-code"
                   style={inputStyle}
                 />
               </div>
@@ -305,6 +374,7 @@ function CommanderForm() {
                   value={form.city}
                   onChange={handleChange}
                   required
+                  autoComplete="address-level2"
                   style={inputStyle}
                 />
               </div>
@@ -315,52 +385,75 @@ function CommanderForm() {
                 name="country"
                 value={form.country}
                 onChange={handleChange}
-                style={inputStyle}
+                autoComplete="country-name"
+                style={{ ...inputStyle, cursor: "pointer" }}
               >
                 <option>France</option>
                 <option>Belgique</option>
                 <option>Suisse</option>
                 <option>Luxembourg</option>
                 <option>Canada</option>
+                <option>Espagne</option>
+                <option>Italie</option>
+                <option>Allemagne</option>
+                <option>Royaume-Uni</option>
+                <option>États-Unis</option>
+                <option>Colombie</option>
                 <option>Autre</option>
               </select>
             </div>
           </>
         )}
 
-        {/* Note précommande */}
+        {/* Message d'erreur */}
+        {errorMsg && (
+          <div
+            style={{
+              padding:         "12px 14px",
+              backgroundColor: "rgba(114,1,1,0.08)",
+              borderLeft:      "2px solid var(--accent)",
+              fontSize:        "12px",
+              fontWeight:      300,
+              color:           "var(--accent)",
+              lineHeight:      "1.5",
+            }}
+          >
+            {errorMsg}
+          </div>
+        )}
+
+        {/* Note sécurité */}
         <p
           style={{
-            fontSize: "11px",
+            fontSize:   "11px",
             fontWeight: 300,
-            color: "var(--details)",
+            color:      "var(--details)",
             lineHeight: "1.6",
-            paddingTop: "4px",
           }}
         >
-          Vous serez redirigé vers le paiement sécurisé Stripe dès que le système sera actif.
+          Paiement sécurisé par Stripe. Vos données bancaires ne transitent jamais par notre serveur.
           Les expéditions débuteront sous un mois.
         </p>
 
-        {/* Submit */}
+        {/* Bouton */}
         <button
           type="submit"
           disabled={loading}
           style={{
-            width: "100%",
-            padding: "14px",
+            width:           "100%",
+            padding:         "14px",
             backgroundColor: loading ? "var(--details)" : "var(--text)",
-            color: "var(--bg)",
-            fontSize: "12px",
-            fontWeight: 300,
-            letterSpacing: "0.1em",
-            border: "none",
-            cursor: loading ? "not-allowed" : "pointer",
-            transition: "background-color 0.2s",
-            textTransform: "uppercase",
+            color:           "var(--bg)",
+            fontSize:        "12px",
+            fontWeight:      300,
+            letterSpacing:   "0.1em",
+            border:          "none",
+            cursor:          loading ? "not-allowed" : "pointer",
+            transition:      "background-color 0.2s",
+            textTransform:   "uppercase",
           }}
         >
-          {loading ? "Enregistrement..." : "Confirmer ma précommande"}
+          {loading ? "Redirection vers le paiement..." : "Procéder au paiement — 45€"}
         </button>
       </form>
     </div>
@@ -369,7 +462,20 @@ function CommanderForm() {
 
 export default function CommanderPage() {
   return (
-    <Suspense fallback={<div style={{ padding: "40px 24px", fontSize: "13px", fontWeight: 300, color: "var(--details)" }}>Chargement...</div>}>
+    <Suspense
+      fallback={
+        <div
+          style={{
+            padding:    "40px 24px",
+            fontSize:   "13px",
+            fontWeight: 300,
+            color:      "var(--details)",
+          }}
+        >
+          Chargement...
+        </div>
+      }
+    >
       <CommanderForm />
     </Suspense>
   );
