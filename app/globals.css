@@ -25,8 +25,16 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
     Arial, sans-serif;
   font-weight: 300;
+  /* Base 14px desktop, 13px mobile — évite l'effet zoom */
   font-size: 14px;
   min-height: 100vh;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 640px) {
+  html, body {
+    font-size: 13px;
+  }
 }
 
 a {
@@ -37,4 +45,20 @@ a {
 img {
   display: block;
   max-width: 100%;
+}
+
+/* ── Responsive boutique grid ── */
+@media (max-width: 640px) {
+  /* La boutique principale passe en colonne sur mobile */
+  .boutique-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .boutique-aside {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    padding: 20px 16px !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 16px !important;
+  }
 }

@@ -12,6 +12,7 @@ export type Produit = {
   description?: string;
   dimensions?: string;
   nouveaute?: boolean;
+  precommande?: boolean;
 };
 
 export type CategorieBoutique = {
@@ -178,8 +179,9 @@ export const boutique: CategorieBoutique[] = [
         id: "livre",
         title: "Tierra de gigantes",
         price: "45€",
-        src: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=800&q=80",
+        src: "/livre.webp",
         nouveaute: true,
+        precommande: true,
         description:
           "Livre photographique réalisé lors d'un voyage dans les hautes terres de la cordillère des Andes en Colombie. Une série d'images contemplatives sur la relation entre l'homme et la montagne.",
         dimensions: "Format A5 — 140 pages",

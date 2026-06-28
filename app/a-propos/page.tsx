@@ -1,6 +1,6 @@
 export default function AProposPage() {
   return (
-    <div style={{ padding: "40px 24px 60px", maxWidth: "640px" }}>
+    <div style={{ padding: "clamp(24px, 5vw, 40px) clamp(16px, 5vw, 24px) 60px", maxWidth: "640px" }}>
       <h1
         style={{
           fontSize: "13px",

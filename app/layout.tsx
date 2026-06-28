@@ -15,6 +15,12 @@ export const metadata: Metadata = {
     "Photographe française d'origine colombienne basée à Paris — portfolio et boutique.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {

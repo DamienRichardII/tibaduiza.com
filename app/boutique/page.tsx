@@ -6,14 +6,16 @@ const livre = boutique.find((c) => c.id === "tierra-de-gigantes")?.produits[0];
 export default function BoutiquePage() {
   return (
     <div
+      className="boutique-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "200px 1fr",
         minHeight: "calc(100vh - 56px)",
       }}
     >
-      {/* Sidebar — livre uniquement */}
+      {/* Sidebar */}
       <aside
+        className="boutique-aside"
         style={{
           padding: "40px 24px",
           borderRight: "1px solid rgba(0,0,0,0.06)",
@@ -34,7 +36,7 @@ export default function BoutiquePage() {
           Tierra de gigantes
         </Link>
 
-        {/* Card livre + Nouveauté */}
+        {/* Card livre */}
         {livre && (
           <div style={{ marginTop: "8px" }}>
             <Link href="/boutique/tierra-de-gigantes">
@@ -49,21 +51,23 @@ export default function BoutiquePage() {
                 <img
                   src={livre.src}
                   alt={livre.title}
-                  style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover" }}
+                  style={{ width: "100%", aspectRatio: "1/1", objectFit: "cover" }}
                 />
+                {/* Badge précommande */}
                 <div
                   style={{
                     position: "absolute",
                     top: "8px",
                     left: "8px",
-                    backgroundColor: "var(--text)",
-                    color: "var(--bg)",
-                    fontSize: "10px",
+                    backgroundColor: "var(--accent)",
+                    color: "#fff",
+                    fontSize: "9px",
                     padding: "2px 6px",
-                    letterSpacing: "0.05em",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
                   }}
                 >
-                  Nouveauté
+                  Précommande
                 </div>
               </div>
               <p style={{ fontSize: "11px", fontWeight: 300, color: "var(--text)" }}>
@@ -83,7 +87,7 @@ export default function BoutiquePage() {
                 padding: "4px 10px",
               }}
             >
-              Ajouter
+              Précommander
             </Link>
           </div>
         )}
@@ -106,6 +110,27 @@ export default function BoutiquePage() {
           <source src="/videos/timeline3.mp4" type="video/mp4" />
           <source src="/videos/timeline3.mov" type="video/quicktime" />
         </video>
+
+        {/* Bandeau délai précommande */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: "12px 24px",
+            backgroundColor: "rgba(248,247,245,0.92)",
+            backdropFilter: "blur(4px)",
+            fontSize: "11px",
+            fontWeight: 300,
+            color: "var(--details)",
+            letterSpacing: "0.03em",
+            lineHeight: "1.5",
+          }}
+        >
+          Les livres sont actuellement proposés en précommande.
+          Les expéditions commenceront sous un mois, le temps de finaliser les précommandes et de lancer la production.
+        </div>
       </main>
     </div>
   );
