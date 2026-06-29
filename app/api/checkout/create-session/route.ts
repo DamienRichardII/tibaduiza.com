@@ -203,9 +203,44 @@ export async function POST(req: Request) {
     }
 
   } catch (err) {
-    console.error("[checkout] ERREUR Stripe :", err instanceof Error ? err.message : String(err));
+    // Logs détaillés côté serveur uniquement — jamais exposés au client
+    if (err && typeof err === "object") {
+      const e = err as {
+        type?: string; code?: string; statusCode?: number;
+        requestId?: string; message?: string; raw?: { message?: string };
+      };
+      console.error("[checkout] ERREUR Stripe détaillée", {
+        type:       e.type,
+        code:       e.code,
+        statusCode: e.statusCode,
+        requestId:  e.requestId,
+        message:    e.message,
+        rawMessage: e.raw?.message,
+      });
+    } else {
+      console.error("[checkout] ERREUR Stripe :", String(err));
+    }
+
+    // Annuler la commande orpheline (Supabase OK, Stripe KO)
+    try {
+      const supabase = getSupabaseClient();
+      await supabase
+        .from("orders")
+        .update({ order_status: "canceled", payment_status: "failed" })
+        .eq("id", createdOrder.id);
+      console.log("[checkout] Commande orpheline annulée —", createdOrder.order_number);
+    } catch (cancelErr) {
+      console.warn(
+        "[checkout] Impossible d'annuler la commande orpheline :",
+        cancelErr instanceof Error ? cancelErr.message : String(cancelErr)
+      );
+    }
+
     return NextResponse.json(
-      { error: "Impossible de créer la session de paiement.", code: "STRIPE_SESSION_FAILED" },
+      {
+        error: "Le paiement n'a pas pu être initialisé. Veuillez réessayer dans quelques instants.",
+        code:  "STRIPE_SESSION_FAILED",
+      },
       { status: 500 }
     );
   }
