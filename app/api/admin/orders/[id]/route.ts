@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { sendShippingConfirmationEmail } from "@/lib/email";
 import type { OrderUpdate } from "@/lib/database.types";
+
+// Force le rendu dynamique — empêche Next.js de pré-rendre cette route au build
+export const dynamic = "force-dynamic";
 
 const schema = z.object({
   order_status:    z.enum(["paid", "preparing", "shipped", "completed", "canceled", "refunded"]),
@@ -40,6 +43,7 @@ export async function PATCH(
   }
 
   const { order_status, carrier_name, tracking_number, tracking_url } = parsed.data;
+  const supabase = getSupabaseClient();
 
   // Récupérer la commande actuelle
   const { data: existing, error: fetchError } = await supabase
@@ -101,6 +105,7 @@ export async function GET(
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
   const { id } = await params;
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase.from("orders").select("*").eq("id", id).single();
   if (error || !data) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
   return NextResponse.json({ order: data });

@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { supabase } from "@/lib/supabase";
+import { getStripeClient } from "@/lib/stripe";
+import { getSupabaseClient } from "@/lib/supabase";
 import {
   sendOrderConfirmationEmail,
   sendAdminNewOrderEmail,
 } from "@/lib/email";
 import type Stripe from "stripe";
 
-/** App Router : lire le body RAW (requis pour la vérification de signature Stripe) */
+// App Router : lire le body RAW (requis pour la vérification de signature Stripe)
 export const runtime = "nodejs";
+
+// Force le rendu dynamique — empêche Next.js de pré-rendre cette route au build
+export const dynamic = "force-dynamic";
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -25,7 +28,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Signature manquante." }, { status: 400 });
   }
 
+  const stripe = getStripeClient();
   let event: Stripe.Event;
+
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, WEBHOOK_SECRET);
   } catch (err) {
@@ -49,7 +54,6 @@ export async function POST(req: Request) {
         break;
 
       default:
-        // Ignorer les événements non gérés
         break;
     }
   } catch (err) {
@@ -71,6 +75,8 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
+  const supabase = getSupabaseClient();
+
   // ── Vérification idempotency ──────────────────────────────────────────
   const { data: existing } = await supabase
     .from("orders")
@@ -84,7 +90,6 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session) {
   }
 
   if (existing.payment_status === "paid") {
-    // Déjà traité (webhook dupliqué)
     console.log("[webhook] Commande déjà payée, ignoré", orderId);
     return;
   }
@@ -93,7 +98,7 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session) {
   let receiptUrl: string | null = null;
   if (session.payment_intent && typeof session.payment_intent === "string") {
     try {
-      const pi = await stripe.paymentIntents.retrieve(session.payment_intent, {
+      const pi = await getStripeClient().paymentIntents.retrieve(session.payment_intent, {
         expand: ["latest_charge"],
       });
       const charge = (pi.latest_charge as Stripe.Charge) ?? null;
@@ -129,12 +134,10 @@ async function handleSessionCompleted(session: Stripe.Checkout.Session) {
     order_id:   orderId,
     event_type: "payment_confirmed",
     payload:    {
-      stripe_session_id:  session.id,
-      // session.payment_intent peut être string | Stripe.PaymentIntent | null
-      // On normalise en string | null pour satisfaire le type Json
-      payment_intent_id:  typeof session.payment_intent === "string"
-                            ? session.payment_intent
-                            : null,
+      stripe_session_id: session.id,
+      payment_intent_id: typeof session.payment_intent === "string"
+                           ? session.payment_intent
+                           : null,
     },
   });
 
@@ -168,11 +171,13 @@ async function handleSessionExpired(session: Stripe.Checkout.Session) {
   const orderId = session.metadata?.order_id;
   if (!orderId) return;
 
+  const supabase = getSupabaseClient();
+
   await supabase
     .from("orders")
     .update({ payment_status: "canceled", order_status: "canceled" })
     .eq("id", orderId)
-    .eq("payment_status", "pending"); // ne pas écraser une commande déjà payée
+    .eq("payment_status", "pending");
 
   await supabase.from("order_events").insert({
     order_id:   orderId,
@@ -184,6 +189,8 @@ async function handleSessionExpired(session: Stripe.Checkout.Session) {
 async function handlePaymentFailed(pi: Stripe.PaymentIntent) {
   const orderId = pi.metadata?.order_id;
   if (!orderId) return;
+
+  const supabase = getSupabaseClient();
 
   await supabase
     .from("orders")

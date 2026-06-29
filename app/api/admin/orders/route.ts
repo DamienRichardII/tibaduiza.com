@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import type { OrderStatus } from "@/lib/database.types";
+
+// Force le rendu dynamique — empêche Next.js de pré-rendre cette route au build
+export const dynamic = "force-dynamic";
 
 // ── Type guard — valide qu'une string URL est un statut de commande connu ──
 const ORDER_STATUSES: readonly OrderStatus[] = [
@@ -35,7 +38,6 @@ export async function GET(req: Request) {
   const limit       = 20;
   const offset      = (page - 1) * limit;
 
-  // Valider le statut avant de l'envoyer à Supabase
   if (statusParam !== null && !isOrderStatus(statusParam)) {
     return NextResponse.json(
       { error: `Statut invalide : "${statusParam}". Valeurs acceptées : ${ORDER_STATUSES.join(", ")}.` },
@@ -43,13 +45,14 @@ export async function GET(req: Request) {
     );
   }
 
+  const supabase = getSupabaseClient();
+
   let query = supabase
     .from("orders")
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  // statusParam est maintenant garanti OrderStatus | null
   if (isOrderStatus(statusParam)) {
     query = query.eq("order_status", statusParam);
   }

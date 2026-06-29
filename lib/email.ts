@@ -6,12 +6,19 @@ import {
   shippingConfirmationHtml,
 } from "@/emails/templates";
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("RESEND_API_KEY manquant.");
+/**
+ * Factory function — crée un client Resend à la demande.
+ * Le throw se produit dans le handler (runtime), jamais au build.
+ */
+function getResendClient(): Resend {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    throw new Error("RESEND_API_KEY manquant.");
+  }
+  return new Resend(key);
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+// Constantes avec fallback — pas de throw au top-level
 const FROM = process.env.FROM_EMAIL ?? "commandes@tibaduizaeli.com";
 const ADMIN = process.env.ADMIN_EMAIL ?? "tibaduizaelipro@gmail.com";
 const SITE = process.env.SITE_NAME ?? "Elisabeth Tibaduiza Manosalva";
@@ -36,6 +43,7 @@ export function formatDate(iso: string): string {
  */
 export async function sendOrderConfirmationEmail(order: Order): Promise<void> {
   try {
+    const resend = getResendClient();
     await resend.emails.send({
       from: `${SITE} <${FROM}>`,
       to: order.customer_email,
@@ -54,6 +62,7 @@ export async function sendOrderConfirmationEmail(order: Order): Promise<void> {
  */
 export async function sendAdminNewOrderEmail(order: Order): Promise<void> {
   try {
+    const resend = getResendClient();
     await resend.emails.send({
       from: `${SITE} <${FROM}>`,
       to: ADMIN,
@@ -71,6 +80,7 @@ export async function sendAdminNewOrderEmail(order: Order): Promise<void> {
  */
 export async function sendShippingConfirmationEmail(order: Order): Promise<void> {
   try {
+    const resend = getResendClient();
     await resend.emails.send({
       from: `${SITE} <${FROM}>`,
       to: order.customer_email,

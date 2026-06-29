@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { stripe, LIVRE_PRICE_CENTS, LIVRE_CURRENCY, LIVRE_NAME } from "@/lib/stripe";
-import { supabase, generateOrderNumber } from "@/lib/supabase";
+import { getStripeClient, LIVRE_PRICE_CENTS, LIVRE_CURRENCY, LIVRE_NAME } from "@/lib/stripe";
+import { getSupabaseClient, generateOrderNumber } from "@/lib/supabase";
+
+// Force le rendu dynamique — empêche Next.js de pré-rendre cette route au build
+export const dynamic = "force-dynamic";
 
 /** Schéma de validation Zod — validation stricte côté serveur */
 const schema = z.object({
@@ -42,6 +45,8 @@ export async function POST(req: Request) {
 
     const data = parsed.data;
     const orderNumber = generateOrderNumber();
+    const supabase = getSupabaseClient();
+    const stripe = getStripeClient();
 
     // ── 1. Créer la commande en BDD (statut pending) ──────────────────────
     const { data: order, error: dbError } = await supabase
@@ -101,7 +106,6 @@ export async function POST(req: Request) {
       },
       success_url: `${SITE_URL}/boutique/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${SITE_URL}/boutique/commande/annulation`,
-      // Pas de shipping_address_collection car on la collecte dans notre formulaire
       payment_intent_data: {
         metadata: {
           order_id:     order.id,

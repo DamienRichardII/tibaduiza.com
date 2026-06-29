@@ -1,22 +1,26 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error("Variables Supabase manquantes — vérifier SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY.");
-}
-
 /**
- * Client Supabase avec la service role key.
+ * Factory function — crée un client Supabase à la demande.
+ * Le throw se produit dans le handler (runtime), jamais au build.
  * À utiliser UNIQUEMENT côté serveur (API Routes).
- * Ne jamais exposer SUPABASE_SERVICE_ROLE_KEY au frontend.
+ * Ne jamais exposer SUPABASE_SERVICE_ROLE_KEY côté client.
  */
-export const supabase = createClient<Database>(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: { persistSession: false, autoRefreshToken: false },
+export function getSupabaseClient() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      "Variables Supabase manquantes — vérifier SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY."
+    );
   }
-);
+
+  return createClient<Database>(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 /** Génère un numéro de commande lisible : TDG-YYYYMMDD-XXXX */
 export function generateOrderNumber(): string {

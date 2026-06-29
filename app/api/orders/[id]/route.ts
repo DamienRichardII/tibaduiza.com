@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
+
+// Force le rendu dynamique — empêche Next.js de pré-rendre cette route au build
+export const dynamic = "force-dynamic";
 
 /** GET /api/orders/[id] — vérifier une commande après paiement (données publiques uniquement) */
 export async function GET(
@@ -10,6 +13,7 @@ export async function GET(
 
   // Accepter un ID Supabase (UUID) ou un stripe_checkout_session_id
   const isSessionId = id.startsWith("cs_");
+  const supabase = getSupabaseClient();
 
   const query = supabase
     .from("orders")
