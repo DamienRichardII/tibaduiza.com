@@ -11,11 +11,11 @@ type DeliveryMode = "domicile" | "main-propre";
 
 /** Visuels du livre — ordre : couverture en premier */
 const GALERIE = [
-  { src: "/livre/01-couverture.jpg",  alt: "Tierra de gigantes — couverture rouge avec ruban tricolore" },
-  { src: "/livre/02-drapeau.jpg",     alt: "Intérieur — double page drapeau colombien sur balcon" },
-  { src: "/livre/03-plants.jpg",      alt: "Intérieur — pépinière de café et agriculteur" },
-  { src: "/livre/04-bus.jpg",         alt: "Intérieur — chiva colorée et statue religieuse" },
-  { src: "/livre/05-cocora.jpg",      alt: "Intérieur — chevaux et vallée de Cocora" },
+  { src: "/livre/1-couverture.png",  alt: "Tierra de gigantes — couverture rouge avec ruban tricolore" },
+  { src: "/livre/2-drapeau.png",     alt: "Intérieur — double page drapeau colombien sur balcon" },
+  { src: "/livre/3-plants.png",      alt: "Intérieur — pépinière de café et agriculteur" },
+  { src: "/livre/4-bus.png",         alt: "Intérieur — chiva colorée et statue religieuse" },
+  { src: "/livre/5-cocora.png",      alt: "Intérieur — chevaux et vallée de Cocora" },
 ];
 
 export default function TierraDeGigantesPage() {
