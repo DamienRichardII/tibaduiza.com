@@ -17,6 +17,9 @@
     "stripe": "^17.7.0",
     "zod": "^3.24.2"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
