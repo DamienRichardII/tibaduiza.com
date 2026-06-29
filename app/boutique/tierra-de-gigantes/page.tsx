@@ -16,6 +16,7 @@ export default function TierraDeGigantesPage() {
 
   return (
     <div style={{ padding: "clamp(16px, 4vw, 24px) clamp(16px, 4vw, 24px) 60px" }}>
+
       {/* Breadcrumb */}
       <div
         style={{
@@ -42,8 +43,8 @@ export default function TierraDeGigantesPage() {
           alignItems: "start",
         }}
       >
-        {/* Photo du livre */}
-        <div style={{ textAlign: "center" }}>
+        {/* ── Colonne gauche — photo ── */}
+        <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={livre.src}
@@ -53,27 +54,28 @@ export default function TierraDeGigantesPage() {
               width: "100%",
               aspectRatio: "1/1",
               objectFit: "cover",
-              margin: "0 auto",
+              display: "block",
             }}
           />
-          <p
+        </div>
+
+        {/* ── Colonne droite — fiche produit ── */}
+        <div>
+
+          {/* 1. Titre */}
+          <h1
             style={{
-              marginTop: "14px",
-              fontSize: "13px",
+              fontSize: "14px",
               fontWeight: 300,
               color: "var(--text)",
+              marginBottom: "6px",
+              letterSpacing: "0.01em",
             }}
           >
             {livre.title}
-          </p>
-          <p style={{ fontSize: "12px", color: "var(--details)", marginTop: "4px" }}>
-            {livre.price}
-          </p>
-        </div>
+          </h1>
 
-        {/* Colonne droite */}
-        <div>
-          {/* Badge précommande */}
+          {/* 2. Badge précommande */}
           <div
             style={{
               display: "inline-block",
@@ -84,13 +86,83 @@ export default function TierraDeGigantesPage() {
               padding: "3px 10px",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              marginBottom: "20px",
+              marginBottom: "14px",
             }}
           >
             Précommande ouverte
           </div>
 
-          {/* Message délai */}
+          {/* 3. Prix */}
+          <p
+            style={{
+              fontSize: "13px",
+              fontWeight: 300,
+              color: "var(--text)",
+              marginBottom: "20px",
+            }}
+          >
+            {livre.price}
+          </p>
+
+          {/* 4. Caractéristiques */}
+          <p
+            style={{
+              fontSize: "11px",
+              fontWeight: 300,
+              color: "var(--details)",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              marginBottom: "4px",
+            }}
+          >
+            Format
+          </p>
+          <p
+            style={{
+              fontSize: "12px",
+              fontWeight: 300,
+              color: "var(--text)",
+              marginBottom: "28px",
+            }}
+          >
+            {livre.dimensions}
+          </p>
+
+          {/* 5. Description littéraire */}
+          <div
+            style={{
+              fontSize: "13px",
+              fontWeight: 300,
+              lineHeight: "1.9",
+              color: "var(--text)",
+              marginBottom: "28px",
+            }}
+          >
+            <p style={{ marginBottom: "16px" }}>
+              Parler de la Colombie, c&apos;est parler de réalisme magique, c&apos;est le lieu
+              de ceux qui cherchent l&apos;extraordinaire dans l&apos;ordinaire,
+              le sacré dans le banal.
+            </p>
+            <p style={{ marginBottom: "16px" }}>
+              Pourtant, ce n&apos;est pas ce que je cherche à montrer — mon travail
+              photographique ne peut pas prétendre contenir ce qui ne peut que se vivre.
+            </p>
+            <p style={{ marginBottom: "16px" }}>
+              Mais ce dont je suis certaine, c&apos;est que la Colombie se défend
+              par elle-même. Chaque Colombien est un géant.
+            </p>
+            <p style={{ marginBottom: "16px" }}>
+              Ce livre est le début d&apos;une réponse à la main tendue de ces mêmes
+              géants qui m&apos;ont accompagnée, ceux qui m&apos;accompagnent aujourd&apos;hui
+              et ceux qui m&apos;accompagneront demain.
+            </p>
+            <p>
+              Le titre &laquo;&nbsp;Terre de Géants&nbsp;&raquo; vient de la traduction du mot muisca
+              &laquo;&nbsp;Nimaima&nbsp;&raquo;, qui est le nom du village le plus présent dans ce livre.
+            </p>
+          </div>
+
+          {/* 6. Message délai */}
           <p
             style={{
               fontSize: "12px",
@@ -100,36 +172,11 @@ export default function TierraDeGigantesPage() {
               marginBottom: "24px",
             }}
           >
-            Les expéditions débuteront sous un mois, le temps de finaliser les précommandes et de lancer la production.
+            Les expéditions débuteront sous un mois, le temps de finaliser
+            les précommandes et de lancer la production.
           </p>
 
-          {/* Description */}
-          {livre.description && (
-            <div style={{ marginBottom: "24px" }}>
-              <p
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 300,
-                  color: "var(--details)",
-                  marginBottom: "4px",
-                }}
-              >
-                {livre.dimensions}
-              </p>
-              <p
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 300,
-                  color: "var(--text)",
-                  lineHeight: "1.7",
-                }}
-              >
-                {livre.description}
-              </p>
-            </div>
-          )}
-
-          {/* ── Mode de livraison ── */}
+          {/* 7. Mode de livraison */}
           <div style={{ marginBottom: "20px" }}>
             <p
               style={{
@@ -144,7 +191,6 @@ export default function TierraDeGigantesPage() {
               Mode de livraison
             </p>
 
-            {/* Option domicile */}
             <label
               style={{
                 display: "flex",
@@ -181,12 +227,11 @@ export default function TierraDeGigantesPage() {
                     marginTop: "2px",
                   }}
                 >
-                  L&apos;adresse de livraison vous sera demandée à la commande.
+                  France et international — frais inclus
                 </span>
               </span>
             </label>
 
-            {/* Option main propre */}
             <label
               style={{
                 display: "flex",
@@ -222,12 +267,11 @@ export default function TierraDeGigantesPage() {
                     marginTop: "2px",
                   }}
                 >
-                  Réservée aux habitants d&apos;Île-de-France.
+                  Île-de-France uniquement
                 </span>
               </span>
             </label>
 
-            {/* Message remise en main propre */}
             {deliveryMode === "main-propre" && (
               <div
                 style={{
@@ -241,12 +285,13 @@ export default function TierraDeGigantesPage() {
                   lineHeight: "1.6",
                 }}
               >
-                Les modalités de remise vous seront communiquées par email après validation de votre précommande.
+                Les modalités de remise vous seront communiquées par email
+                après validation de votre précommande.
               </div>
             )}
           </div>
 
-          {/* CTA Précommander */}
+          {/* 8. CTA */}
           <Link
             href={`/boutique/tierra-de-gigantes/commander?mode=${deliveryMode}`}
             style={{
@@ -297,8 +342,8 @@ export default function TierraDeGigantesPage() {
                   lineHeight: "1.6",
                 }}
               >
-                Livraison en France sous un mois environ. Le livre est
-                expédié emballé soigneusement dans un carton rigide.
+                Livraison en France et à l&apos;international, frais inclus.
+                Le livre est expédié soigneusement emballé dans un carton rigide.
                 Une remise en main propre est possible pour les habitants
                 d&apos;Île-de-France — les modalités seront communiquées par email.
               </p>
