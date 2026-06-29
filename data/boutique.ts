@@ -179,7 +179,7 @@ export const boutique: CategorieBoutique[] = [
         id: "livre",
         title: "Tierra de gigantes",
         price: "45€",
-        src: "/livre.webp",
+        src: "/livre/1-couverture.png",
         nouveaute: true,
         precommande: true,
         description:
