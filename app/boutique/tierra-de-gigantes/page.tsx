@@ -9,10 +9,23 @@ const livre = cat.produits[0];
 
 type DeliveryMode = "domicile" | "main-propre";
 
+/** Visuels du livre — ordre : couverture en premier */
+const GALERIE = [
+  { src: "/livre/01-couverture.jpg",  alt: "Tierra de gigantes — couverture rouge avec ruban tricolore" },
+  { src: "/livre/02-drapeau.jpg",     alt: "Intérieur — double page drapeau colombien sur balcon" },
+  { src: "/livre/03-plants.jpg",      alt: "Intérieur — pépinière de café et agriculteur" },
+  { src: "/livre/04-bus.jpg",         alt: "Intérieur — chiva colorée et statue religieuse" },
+  { src: "/livre/05-cocora.jpg",      alt: "Intérieur — chevaux et vallée de Cocora" },
+];
+
 export default function TierraDeGigantesPage() {
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("domicile");
-  const [openLivraison, setOpenLivraison] = useState(false);
-  const [openRetours, setOpenRetours] = useState(false);
+  const [deliveryMode, setDeliveryMode]     = useState<DeliveryMode>("domicile");
+  const [openLivraison, setOpenLivraison]   = useState(false);
+  const [openRetours, setOpenRetours]       = useState(false);
+  const [activeIndex, setActiveIndex]       = useState(0);
+  const [lightbox, setLightbox]             = useState(false);
+
+  const activeImage = GALERIE[activeIndex];
 
   return (
     <div style={{ padding: "clamp(16px, 4vw, 24px) clamp(16px, 4vw, 24px) 60px" }}>
@@ -28,35 +41,211 @@ export default function TierraDeGigantesPage() {
           flexWrap: "wrap",
         }}
       >
-        <Link href="/boutique" style={{ color: "var(--text)" }}>
-          Boutique
-        </Link>
+        <Link href="/boutique" style={{ color: "var(--text)" }}>Boutique</Link>
         <span style={{ color: "var(--details)" }}>&gt;</span>
         <span style={{ color: "var(--accent)" }}>Tierra de Gigantes</span>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
-          gap: "clamp(24px, 6vw, 60px)",
-          alignItems: "start",
-        }}
-      >
-        {/* ── Colonne gauche — photo ── */}
-        <div>
+      {/* ── Lightbox ── */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(false)}
+          style={{
+            position:        "fixed",
+            inset:           0,
+            zIndex:          1000,
+            backgroundColor: "rgba(0,0,0,0.92)",
+            display:         "flex",
+            alignItems:      "center",
+            justifyContent:  "center",
+            cursor:          "zoom-out",
+            padding:         "24px",
+          }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={livre.src}
-            alt={livre.title}
+            src={activeImage.src}
+            alt={activeImage.alt}
             style={{
-              maxWidth: "460px",
-              width: "100%",
-              aspectRatio: "1/1",
-              objectFit: "cover",
-              display: "block",
+              maxWidth:   "90vw",
+              maxHeight:  "90vh",
+              objectFit:  "contain",
+              display:    "block",
             }}
+            onClick={(e) => e.stopPropagation()}
           />
+          <button
+            onClick={() => setLightbox(false)}
+            style={{
+              position:        "fixed",
+              top:             "20px",
+              right:           "24px",
+              background:      "none",
+              border:          "none",
+              color:           "#fff",
+              fontSize:        "28px",
+              fontWeight:      300,
+              cursor:          "pointer",
+              lineHeight:      1,
+            }}
+            aria-label="Fermer"
+          >
+            ×
+          </button>
+          {/* Navigation dans la lightbox */}
+          {GALERIE.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex((i) => (i - 1 + GALERIE.length) % GALERIE.length);
+                }}
+                style={{
+                  position:        "fixed",
+                  left:            "16px",
+                  top:             "50%",
+                  transform:       "translateY(-50%)",
+                  background:      "rgba(255,255,255,0.1)",
+                  border:          "none",
+                  color:           "#fff",
+                  fontSize:        "24px",
+                  padding:         "12px 16px",
+                  cursor:          "pointer",
+                  lineHeight:      1,
+                }}
+                aria-label="Image précédente"
+              >
+                ‹
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex((i) => (i + 1) % GALERIE.length);
+                }}
+                style={{
+                  position:        "fixed",
+                  right:           "16px",
+                  top:             "50%",
+                  transform:       "translateY(-50%)",
+                  background:      "rgba(255,255,255,0.1)",
+                  border:          "none",
+                  color:           "#fff",
+                  fontSize:        "24px",
+                  padding:         "12px 16px",
+                  cursor:          "pointer",
+                  lineHeight:      1,
+                }}
+                aria-label="Image suivante"
+              >
+                ›
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      <div
+        style={{
+          display:             "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
+          gap:                 "clamp(24px, 6vw, 60px)",
+          alignItems:          "start",
+        }}
+      >
+        {/* ── Colonne gauche — galerie ── */}
+        <div>
+          {/* Image principale */}
+          <div
+            style={{
+              position:   "relative",
+              overflow:   "hidden",
+              cursor:     "zoom-in",
+              marginBottom: "10px",
+            }}
+            onClick={() => setLightbox(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && setLightbox(true)}
+            aria-label="Agrandir l'image"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={activeImage.src}
+              src={activeImage.src}
+              alt={activeImage.alt}
+              style={{
+                width:      "100%",
+                maxWidth:   "460px",
+                aspectRatio: activeIndex === 0 ? "4/3" : "16/9",
+                objectFit:  "cover",
+                display:    "block",
+                transition: "opacity 0.2s ease",
+              }}
+            />
+            {/* Indicateur zoom */}
+            <div
+              style={{
+                position:        "absolute",
+                bottom:          "10px",
+                right:           "10px",
+                backgroundColor: "rgba(0,0,0,0.45)",
+                color:           "#fff",
+                fontSize:        "11px",
+                fontWeight:      300,
+                padding:         "3px 8px",
+                letterSpacing:   "0.04em",
+                pointerEvents:   "none",
+              }}
+            >
+              {activeIndex + 1} / {GALERIE.length}
+            </div>
+          </div>
+
+          {/* Miniatures */}
+          <div
+            style={{
+              display:         "flex",
+              gap:             "6px",
+              overflowX:       "auto",
+              paddingBottom:   "4px",
+              scrollbarWidth:  "none",
+              maxWidth:        "460px",
+            }}
+          >
+            {GALERIE.map((img, i) => (
+              <button
+                key={img.src}
+                onClick={() => setActiveIndex(i)}
+                style={{
+                  flexShrink:  0,
+                  padding:     0,
+                  border:      i === activeIndex
+                                 ? "2px solid var(--accent)"
+                                 : "2px solid transparent",
+                  cursor:      "pointer",
+                  background:  "none",
+                  transition:  "border-color 0.15s",
+                  borderRadius: 0,
+                }}
+                aria-label={`Voir : ${img.alt}`}
+                aria-current={i === activeIndex ? "true" : undefined}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  style={{
+                    width:      "64px",
+                    height:     "48px",
+                    objectFit:  "cover",
+                    display:    "block",
+                    opacity:    i === activeIndex ? 1 : 0.6,
+                    transition: "opacity 0.15s",
+                  }}
+                />
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* ── Colonne droite — fiche produit ── */}
@@ -65,9 +254,9 @@ export default function TierraDeGigantesPage() {
           {/* 1. Titre */}
           <h1
             style={{
-              fontSize: "14px",
-              fontWeight: 300,
-              color: "var(--text)",
+              fontSize:     "14px",
+              fontWeight:   300,
+              color:        "var(--text)",
               marginBottom: "6px",
               letterSpacing: "0.01em",
             }}
@@ -78,15 +267,15 @@ export default function TierraDeGigantesPage() {
           {/* 2. Badge précommande */}
           <div
             style={{
-              display: "inline-block",
+              display:         "inline-block",
               backgroundColor: "var(--accent)",
-              color: "#fff",
-              fontSize: "10px",
-              fontWeight: 300,
-              padding: "3px 10px",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              marginBottom: "14px",
+              color:           "#fff",
+              fontSize:        "10px",
+              fontWeight:      300,
+              padding:         "3px 10px",
+              letterSpacing:   "0.1em",
+              textTransform:   "uppercase",
+              marginBottom:    "14px",
             }}
           >
             Précommande ouverte
@@ -95,9 +284,9 @@ export default function TierraDeGigantesPage() {
           {/* 3. Prix */}
           <p
             style={{
-              fontSize: "13px",
-              fontWeight: 300,
-              color: "var(--text)",
+              fontSize:     "13px",
+              fontWeight:   300,
+              color:        "var(--text)",
               marginBottom: "20px",
             }}
           >
@@ -107,21 +296,21 @@ export default function TierraDeGigantesPage() {
           {/* 4. Caractéristiques */}
           <p
             style={{
-              fontSize: "11px",
-              fontWeight: 300,
-              color: "var(--details)",
+              fontSize:      "11px",
+              fontWeight:    300,
+              color:         "var(--details)",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
-              marginBottom: "4px",
+              marginBottom:  "4px",
             }}
           >
             Format
           </p>
           <p
             style={{
-              fontSize: "12px",
-              fontWeight: 300,
-              color: "var(--text)",
+              fontSize:     "12px",
+              fontWeight:   300,
+              color:        "var(--text)",
               marginBottom: "28px",
             }}
           >
@@ -131,10 +320,10 @@ export default function TierraDeGigantesPage() {
           {/* 5. Description littéraire */}
           <div
             style={{
-              fontSize: "13px",
-              fontWeight: 300,
-              lineHeight: "1.9",
-              color: "var(--text)",
+              fontSize:     "13px",
+              fontWeight:   300,
+              lineHeight:   "1.9",
+              color:        "var(--text)",
               marginBottom: "28px",
             }}
           >
@@ -165,10 +354,10 @@ export default function TierraDeGigantesPage() {
           {/* 6. Message délai */}
           <p
             style={{
-              fontSize: "12px",
-              fontWeight: 300,
-              color: "var(--details)",
-              lineHeight: "1.7",
+              fontSize:     "12px",
+              fontWeight:   300,
+              color:        "var(--details)",
+              lineHeight:   "1.7",
               marginBottom: "24px",
             }}
           >
@@ -180,12 +369,12 @@ export default function TierraDeGigantesPage() {
           <div style={{ marginBottom: "20px" }}>
             <p
               style={{
-                fontSize: "11px",
-                fontWeight: 300,
-                color: "var(--details)",
+                fontSize:      "11px",
+                fontWeight:    300,
+                color:         "var(--details)",
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
-                marginBottom: "10px",
+                marginBottom:  "10px",
               }}
             >
               Mode de livraison
@@ -193,10 +382,10 @@ export default function TierraDeGigantesPage() {
 
             <label
               style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "10px",
-                cursor: "pointer",
+                display:      "flex",
+                alignItems:   "flex-start",
+                gap:          "10px",
+                cursor:       "pointer",
                 marginBottom: "10px",
               }}
             >
@@ -211,19 +400,19 @@ export default function TierraDeGigantesPage() {
               <span>
                 <span
                   style={{
-                    display: "block",
-                    fontSize: "12px",
+                    display:    "block",
+                    fontSize:   "12px",
                     fontWeight: 300,
-                    color: "var(--text)",
+                    color:      "var(--text)",
                   }}
                 >
                   Livraison à domicile
                 </span>
                 <span
                   style={{
-                    display: "block",
-                    fontSize: "11px",
-                    color: "var(--details)",
+                    display:   "block",
+                    fontSize:  "11px",
+                    color:     "var(--details)",
                     marginTop: "2px",
                   }}
                 >
@@ -234,10 +423,10 @@ export default function TierraDeGigantesPage() {
 
             <label
               style={{
-                display: "flex",
+                display:    "flex",
                 alignItems: "flex-start",
-                gap: "10px",
-                cursor: "pointer",
+                gap:        "10px",
+                cursor:     "pointer",
               }}
             >
               <input
@@ -251,19 +440,19 @@ export default function TierraDeGigantesPage() {
               <span>
                 <span
                   style={{
-                    display: "block",
-                    fontSize: "12px",
+                    display:    "block",
+                    fontSize:   "12px",
                     fontWeight: 300,
-                    color: "var(--text)",
+                    color:      "var(--text)",
                   }}
                 >
                   Remise en main propre
                 </span>
                 <span
                   style={{
-                    display: "block",
-                    fontSize: "11px",
-                    color: "var(--details)",
+                    display:   "block",
+                    fontSize:  "11px",
+                    color:     "var(--details)",
                     marginTop: "2px",
                   }}
                 >
@@ -275,14 +464,14 @@ export default function TierraDeGigantesPage() {
             {deliveryMode === "main-propre" && (
               <div
                 style={{
-                  marginTop: "12px",
-                  padding: "12px 14px",
+                  marginTop:       "12px",
+                  padding:         "12px 14px",
                   backgroundColor: "rgba(114,1,1,0.05)",
-                  borderLeft: "2px solid var(--accent)",
-                  fontSize: "11px",
-                  fontWeight: 300,
-                  color: "var(--details)",
-                  lineHeight: "1.6",
+                  borderLeft:      "2px solid var(--accent)",
+                  fontSize:        "11px",
+                  fontWeight:      300,
+                  color:           "var(--details)",
+                  lineHeight:      "1.6",
                 }}
               >
                 Les modalités de remise vous seront communiquées par email
@@ -295,19 +484,19 @@ export default function TierraDeGigantesPage() {
           <Link
             href={`/boutique/tierra-de-gigantes/commander?mode=${deliveryMode}`}
             style={{
-              display: "block",
-              width: "100%",
-              padding: "14px",
+              display:         "block",
+              width:           "100%",
+              padding:         "14px",
               backgroundColor: "var(--text)",
-              color: "var(--bg)",
-              fontSize: "12px",
-              fontWeight: 300,
-              letterSpacing: "0.1em",
-              textAlign: "center",
-              textTransform: "uppercase",
-              textDecoration: "none",
-              marginBottom: "24px",
-              transition: "background-color 0.2s",
+              color:           "var(--bg)",
+              fontSize:        "12px",
+              fontWeight:      300,
+              letterSpacing:   "0.1em",
+              textAlign:       "center",
+              textTransform:   "uppercase",
+              textDecoration:  "none",
+              marginBottom:    "24px",
+              transition:      "background-color 0.2s",
             }}
           >
             Je précommande mon exemplaire
@@ -318,16 +507,16 @@ export default function TierraDeGigantesPage() {
             <button
               onClick={() => setOpenLivraison((v) => !v)}
               style={{
-                width: "100%",
-                display: "flex",
+                width:          "100%",
+                display:        "flex",
                 justifyContent: "space-between",
-                padding: "14px 0",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: 300,
-                color: "var(--text)",
+                padding:        "14px 0",
+                background:     "none",
+                border:         "none",
+                cursor:         "pointer",
+                fontSize:       "12px",
+                fontWeight:     300,
+                color:          "var(--text)",
               }}
             >
               Informations de livraison
@@ -336,10 +525,10 @@ export default function TierraDeGigantesPage() {
             {openLivraison && (
               <p
                 style={{
-                  fontSize: "12px",
-                  color: "var(--details)",
+                  fontSize:     "12px",
+                  color:        "var(--details)",
                   paddingBottom: "14px",
-                  lineHeight: "1.6",
+                  lineHeight:   "1.6",
                 }}
               >
                 Livraison en France et à l&apos;international, frais inclus.
@@ -355,16 +544,16 @@ export default function TierraDeGigantesPage() {
             <button
               onClick={() => setOpenRetours((v) => !v)}
               style={{
-                width: "100%",
-                display: "flex",
+                width:          "100%",
+                display:        "flex",
                 justifyContent: "space-between",
-                padding: "14px 0",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: 300,
-                color: "var(--text)",
+                padding:        "14px 0",
+                background:     "none",
+                border:         "none",
+                cursor:         "pointer",
+                fontSize:       "12px",
+                fontWeight:     300,
+                color:          "var(--text)",
               }}
             >
               Politique de retours
@@ -373,10 +562,10 @@ export default function TierraDeGigantesPage() {
             {openRetours && (
               <p
                 style={{
-                  fontSize: "12px",
-                  color: "var(--details)",
+                  fontSize:     "12px",
+                  color:        "var(--details)",
                   paddingBottom: "14px",
-                  lineHeight: "1.6",
+                  lineHeight:   "1.6",
                 }}
               >
                 Retours acceptés dans les 14 jours si le produit est en parfait
