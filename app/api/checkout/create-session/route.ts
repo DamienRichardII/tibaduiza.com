@@ -45,8 +45,9 @@ export async function POST(req: Request) {
 
   if (missingVars.length > 0) {
     console.error("[checkout] Variables d'environnement manquantes :", missingVars.join(", "));
+    // On expose les NOMS des variables manquantes (jamais leurs valeurs)
     return NextResponse.json(
-      { error: "Configuration serveur incomplète.", code: "MISSING_ENV_VARS" },
+      { error: "Configuration serveur incomplète.", code: "MISSING_ENV_VARS", missing: missingVars },
       { status: 500 }
     );
   }
