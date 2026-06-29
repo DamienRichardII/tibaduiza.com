@@ -36,8 +36,27 @@ const schema = z
     }
   );
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://tibaduizaeli.com";
+/** Construit une URL de base absolue valide pour Stripe (https, sans slash final) */
+function buildSiteUrl(): string {
+  const raw =
+    process.env.FRONTEND_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "https://tibaduizaeli.com";
+  const withProtocol = raw.startsWith("http") ? raw : `https://${raw}`;
+  return withProtocol.replace(/\/+$/, ""); // supprime les slashes finaux
+}
+
+/** Valide qu'une URL est absolue et utilise http(s). Lance une Error sinon. */
+function assertValidUrl(value: string, label: string): void {
+  try {
+    const u = new URL(value);
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      throw new Error(`protocole invalide: ${u.protocol}`);
+    }
+  } catch {
+    throw new Error(`${label} invalide: "${value}"`);
+  }
+}
 
 export async function POST(req: Request) {
   // ── 0. Vérification des variables d'environnement ─────────────────────────
@@ -139,6 +158,16 @@ export async function POST(req: Request) {
   let checkoutUrl: string;
 
   try {
+    // Construire et valider les URLs au moment de la requête (pas au build)
+    const siteUrl    = buildSiteUrl();
+    const successUrl = `${siteUrl}/boutique/commande/succes?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl  = `${siteUrl}/boutique/commande/annulation`;
+
+    console.log("[checkout] URLs Stripe", { siteUrl, successUrl, cancelUrl });
+
+    assertValidUrl(successUrl, "success_url");
+    assertValidUrl(cancelUrl,  "cancel_url");
+
     const stripe = getStripeClient();
     const session = await stripe.checkout.sessions.create({
       mode:           "payment",
@@ -151,6 +180,7 @@ export async function POST(req: Request) {
             product_data: {
               name:        LIVRE_NAME,
               description: "Format A5 — 140 pages — Précommande",
+              // Pas d'images ici — Stripe exige des URLs absolues https pour les images produit
             },
           },
           quantity: 1,
@@ -163,8 +193,8 @@ export async function POST(req: Request) {
         delivery_mode:  data.deliveryMode,
         product_name:   LIVRE_NAME,
       },
-      success_url: `${SITE_URL}/boutique/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${SITE_URL}/boutique/commande/annulation`,
+      success_url: successUrl,
+      cancel_url:  cancelUrl,
       payment_intent_data: {
         metadata: {
           order_id:     createdOrder.id,
