@@ -4,6 +4,9 @@ import { getStripeClient, LIVRE_PRICE_CENTS, LIVRE_CURRENCY, LIVRE_NAME } from "
 import { getSupabaseClient, generateOrderNumber } from "@/lib/supabase";
 import type { Order } from "@/lib/database.types";
 
+// Force le runtime Node.js — Stripe SDK n'est pas compatible avec Edge Runtime
+export const runtime = "nodejs";
+
 // Force le rendu dynamique — empêche Next.js de pré-rendre cette route au build
 export const dynamic = "force-dynamic";
 

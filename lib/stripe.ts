@@ -9,25 +9,48 @@ import Stripe from "stripe";
  * ce qui corrige les StripeConnectionError sur Railway et Vercel.
  */
 export function getStripeClient(): Stripe {
-  const key = process.env.STRIPE_SECRET_KEY;
+  const raw = process.env.STRIPE_SECRET_KEY;
 
-  if (!key) {
+  if (!raw) {
     throw new Error(
       "STRIPE_SECRET_KEY manquant — vérifier les variables d'environnement."
     );
   }
 
-  const trimmedKey = key.trim();
+  // Nettoyage défensif : trim + suppression de guillemets entourants
+  // (fréquent quand la valeur est copiée avec les guillemets dans Railway/Vercel)
+  let key = raw.trim();
+  if ((key.startsWith('"') && key.endsWith('"')) ||
+      (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+
   const mode =
-    trimmedKey.startsWith("sk_live_") ? "live" :
-    trimmedKey.startsWith("sk_test_") ? "test"  :
+    key.startsWith("sk_live_") ? "live" :
+    key.startsWith("sk_test_") ? "test"  :
     "unknown";
 
-  console.log(`[stripe] Init — mode: ${mode}, présence clé: oui`);
+  // Log de diagnostic sécurisé — jamais la clé complète
+  console.log("[stripe] Secret key check", {
+    present:     true,
+    prefix:      key.slice(0, 8),       // ex: "sk_test_" ou "sk_live_"
+    mode,
+    length:      key.length,
+    firstChar:   key.charCodeAt(0),     // 34 = guillemet, 115 = 's' (sk_...)
+    hadQuotes:   raw.trim() !== key,
+  });
 
-  return new Stripe(trimmedKey, {
+  if (mode === "unknown") {
+    console.error(
+      "[stripe] ERREUR — clé invalide. Préfixe attendu: sk_test_ ou sk_live_. " +
+      "Vérifier STRIPE_SECRET_KEY dans Railway/Vercel (pas de guillemets, pas pk_, pas whsec_, pas rk_)."
+    );
+  }
+
+  return new Stripe(key, {
     apiVersion:        "2025-02-24.acacia",
     maxNetworkRetries: 2,
+    timeout:           30000,
     // Force le transport Node.js https au lieu du fetch natif (Node 18+).
     // Corrige StripeConnectionError "Request was retried 2 times" sur Railway/Vercel.
     httpClient:        Stripe.createNodeHttpClient(),

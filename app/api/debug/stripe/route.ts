@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe";
 
+// Force le runtime Node.js — Stripe SDK n'est pas compatible avec Edge Runtime
+export const runtime = "nodejs";
+
 // Force le rendu dynamique
 export const dynamic = "force-dynamic";
 
