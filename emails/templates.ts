@@ -2,7 +2,7 @@ import type { Order } from "@/lib/database.types";
 import { formatPrice, formatDate } from "@/lib/email";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://tibaduizaeli.com";
-const SUPPORT = process.env.SUPPORT_EMAIL ?? "tibaduizaelipro@gmail.com";
+const SUPPORT = process.env.SUPPORT_EMAIL ?? "contact@tibaduizaeli.com";
 
 /** Styles communs inline */
 const base = `

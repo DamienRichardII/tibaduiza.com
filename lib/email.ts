@@ -19,9 +19,9 @@ function getResendClient(): Resend {
 }
 
 // Constantes avec fallback — pas de throw au top-level
-const FROM = process.env.FROM_EMAIL ?? "commandes@tibaduizaeli.com";
-const ADMIN = process.env.ADMIN_EMAIL ?? "tibaduizaelipro@gmail.com";
-const SITE = process.env.SITE_NAME ?? "Elisabeth Tibaduiza Manosalva";
+const FROM  = process.env.FROM_EMAIL   ?? "contact@tibaduizaeli.com";
+const ADMIN = process.env.ADMIN_EMAIL  ?? "contact@tibaduizaeli.com";
+const SITE  = process.env.SITE_NAME   ?? "Elisabeth Tibaduiza Manosalva";
 
 /** Formate un montant en centimes → "45,00 €" */
 export function formatPrice(cents: number): string {
